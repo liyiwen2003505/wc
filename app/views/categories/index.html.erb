@@ -1,0 +1,63 @@
+<h1>分类列表</h1>
+
+<%= search_form_for @q, url: categories_path, method: :get, local: true do |f| %>
+  <p>
+    <%= f.label :name_cont, "搜索分类" %>
+    <%= f.search_field :name_cont, placeholder: "输入分类名称" %>
+    <%= f.submit "搜索" %>
+  </p>
+<% end %>
+
+<% if @categories.any? %>
+  <table style="border-collapse: collapse; width: 30%; font-size: 12px; margin-left: 0;">
+    <tr>
+      <th style="border: 1px solid #000; padding: 5px;">分类名称</th>
+      <th style="border: 1px solid #000; padding: 5px;">操作</th>
+    </tr>
+    <% @categories.each do |category| %>
+      <tr>
+        <td style="border: 1px solid #000; padding: 5px;"><%= category.name %></td>
+        <td style="border: 1px solid #000; padding: 5px;">
+          <%= button_to '删除', category_path(category), method: :delete, data: { confirm: '你确定要删除这个分类吗？' } %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+<% else %>
+  <p>没有找到符合条件的分类。</p>  <!-- 提示没有搜索到结果 -->
+<% end %>
+
+<%= paginate @categories %>
+<%= link_to '添加分类', new_category_path %>
+<%= link_to '返回', books_path %>
+
+
+
+<%#= form_with url: categories_path, method: :get, local: true do %>
+<!--  <p>-->
+    <%#= label_tag :search, "搜索分类" %>
+    <%#= text_field_tag :search, params[:search], placeholder: "输入分类名称" %>
+    <%#= submit_tag "搜索" %>
+<!--  </p>-->
+<%# end %>
+
+<%# if @categories.any? %>
+<!--  <table style="border-collapse: collapse; width: 30%; font-size: 12px; margin-left: 0;">-->
+<!--  <tr>-->
+<!--    <th style="border: 1px solid #000; padding: 5px;">分类名称</th>-->
+<!--    <th style="border: 1px solid #000; padding: 5px;">操作</th>-->
+<!--  </tr>-->
+  <%# @categories.each do |category| %>
+<!--    <tr>-->
+<!--      <td style="border: 1px solid #000; padding: 5px;"><%#= category.name %></td>-->
+<!--      <td style="border: 1px solid #000; padding: 5px;">-->
+        <%#= button_to '删除', category_path(category), method: :delete, data: { confirm: '你确定要删除这个分类吗？' } %>
+<!--      </td>-->
+<!--    </tr>-->
+  <%# end %>
+<!--</table>-->
+<%# end %>
+
+<%#= paginate @categories %>
+<%#= link_to '添加分类', new_category_path %>
+<%#= link_to '返回', books_path %>

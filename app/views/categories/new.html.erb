@@ -1,0 +1,13 @@
+<h1>添加分类</h1>
+
+<%= form_with model: @category, local: true do |form| %>
+  <p>
+    <%= form.label :分类名 %>
+    <%= form.text_field :name %>
+  </p>
+  <p>
+    <%= form.submit "添加" %>
+  </p>
+<% end %>
+
+<a href="<%= categories_path %>">返回列表</a>

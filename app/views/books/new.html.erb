@@ -1,0 +1,189 @@
+<h1>添加书籍</h1>
+
+<%= form_with(model: @book, local: true) do |f| %>
+  <div>
+    <%= f.label :title, "书名" %>
+    <%= f.text_field :title %>
+  </div>
+
+  <!-- 模态层 -->
+  <div id="authorModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close" id="closeAuthorModal">&times;</span>
+      <h2>选择作者</h2>
+
+      <!-- 搜索框 -->
+      <input type="text" id="authorSearch" placeholder="搜索作者..." />
+      <input type="number" id="minAge" placeholder="最小年龄" />
+      <input type="number" id="maxAge" placeholder="最大年龄" />
+      <button id="searchAuthors">搜索</button>
+
+      <!-- 作者表格 -->
+      <table style="border-collapse: collapse; width: 50%; font-size: 12px; margin-left: 0;">
+        <thead>
+        <tr>
+          <th style="border: 1px solid #000; padding: 5px;">姓名</th>
+          <th style="border: 1px solid #000; padding: 5px;">性别</th>
+          <th style="border: 1px solid #000; padding: 5px;">年龄</th>
+          <th style="border: 1px solid #000; padding: 5px;">身份证号</th>
+          <th style="border: 1px solid #000; padding: 5px;">描述</th>
+          <th style="border: 1px solid #000; padding: 5px;">头像</th>
+          <th style="border: 1px solid #000; padding: 5px;">操作</th>
+        </tr>
+        </thead>
+        <tbody id="authorTableBody">
+        <!-- 作者数据将通过 JavaScript 动态填充 -->
+        </tbody>
+      </table>
+
+      <!-- 分页按钮 -->
+      <div>
+        <button id="prevPage">上一页</button>
+        <span id="pageInfo"></span>
+        <button id="nextPage">下一页</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :category_id, "分类" %>
+    <%= f.select :category_id, options_from_collection_for_select(Category.all, :id, :name), { prompt: "请选择分类" } %>
+  </div>
+
+  <div>
+    <%= f.label :total, "库存" %>
+    <%= f.number_field :total, min: 0, max: 1000, step: 1 %>
+  </div>
+
+  <div>
+    <%= f.label :description, "描述" %>
+    <%= f.text_area :description %>
+  </div>
+  <!-- 选择作者按钮 -->
+  <button type="button" id="openAuthorModal" class="btn btn-primary">选择作者</button>
+  <input type="hidden" id="selectedAuthorId" name="book[author_id]" />
+
+  <!-- 显示选中的作者名字 -->
+  <span id="selectedAuthorName">未选择作者</span>
+
+  <div>
+    <%= f.submit "添加书籍" %>
+  </div>
+<% end %>
+
+<%= link_to '返回', books_path %>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let currentPage = 1;
+        let totalPages = 1; // 总页数
+        let currentSearch = "";
+        let currentMinAge = "";
+        let currentMaxAge = "";
+
+
+        // 打开模态层
+        document.getElementById("openAuthorModal").addEventListener("click", function () {
+            document.getElementById("authorModal").style.display = "block";
+            loadAuthors(); // 默认加载第一页的所有数据
+        });
+
+        // 关闭模态层
+        document.getElementById("closeAuthorModal").addEventListener("click", function () {
+            document.getElementById("authorModal").style.display = "none";
+        });
+
+        // 搜索
+        document.getElementById("searchAuthors").addEventListener("click", function () {
+            currentPage = 1; // 搜索时回到第一页
+            loadAuthors(true); // 传入 true，表示搜索模式
+        });
+
+        // 分页
+        document.getElementById("prevPage").addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                loadAuthors(); // 重新加载数据
+            }
+        });
+
+        document.getElementById("nextPage").addEventListener("click", function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadAuthors(); // 重新加载数据
+            }
+        });
+
+        // 加载作者数据
+        function loadAuthors(isSearch = false) {
+            if (isSearch) {
+                // 从输入框中获取新的搜索条件
+                currentSearch = document.getElementById("authorSearch").value.trim();
+                currentMinAge = document.getElementById("minAge").value;
+                currentMaxAge = document.getElementById("maxAge").value;
+            }
+
+            let url = `/authors.json?page=${currentPage}`;
+
+            if (currentSearch) url += `&q[name_cont]=${encodeURIComponent(currentSearch)}`;
+            if (currentMinAge) url += `&min_age=${currentMinAge}`;
+            if (currentMaxAge) url += `&max_age=${currentMaxAge}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById("authorTableBody");
+                    let pageInfo = document.getElementById("pageInfo");
+                    let prevPageBtn = document.getElementById("prevPage");
+                    let nextPageBtn = document.getElementById("nextPage");
+
+                    tableBody.innerHTML = "";
+                    pageInfo.textContent = "";
+                    tableBody.closest("table").style.display = "table";
+
+                    if (data.authors.length === 0) {
+                        tableBody.innerHTML = "<tr><td colspan='7' style='text-align: center; color: gray;'>暂无数据</td></tr>";
+                        prevPageBtn.disabled = true;
+                        nextPageBtn.disabled = true;
+                        return;
+                    }
+
+                    data.authors.forEach(author => {
+                        let row = document.createElement("tr");
+                        row.innerHTML = `
+                    <td style="border: 1px solid #000; padding: 5px;">${author.name}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${author.gender}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${author.age}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${author.id_number}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">${author.description}</td>
+                    <td style="border: 1px solid #000; padding: 5px;">
+                        ${author.avatar_url ? `<img src="${author.avatar_url}" width="50" height="50" alt="作者头像">` : '无头像'}
+                    </td>
+                    <td style="border: 1px solid #000; padding: 5px;">
+                        <button class="selectAuthor" data-id="${author.id}" data-name="${author.name}">选择</button>
+                    </td>
+                `;
+                        tableBody.appendChild(row);
+                    });
+
+                    document.querySelectorAll(".selectAuthor").forEach(button => {
+                        button.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            let selectedAuthorId = this.dataset.id;
+                            let selectedAuthorName = this.dataset.name;
+                            document.getElementById("selectedAuthorId").value = selectedAuthorId;
+                            document.getElementById("selectedAuthorName").textContent = `已选择作者: ${selectedAuthorName}`;
+                            document.getElementById("authorModal").style.display = "none";
+                        });
+                    });
+
+                    totalPages = data.total_pages;
+                    pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+                    prevPageBtn.disabled = currentPage <= 1;
+                    nextPageBtn.disabled = currentPage >= totalPages;
+                })
+                .catch(error => console.error("加载作者数据失败:", error));
+        }}
+    )
+
+</script>

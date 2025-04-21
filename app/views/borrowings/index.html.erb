@@ -1,0 +1,111 @@
+<h2>我的借阅记录</h2>
+
+<!-- 筛选按钮 -->
+<div class="btn-group mt-3">
+  <%= link_to '全部', borrowings_path(q: { status_eq: '' }), class: 'btn btn-primary' %>
+  <%= link_to '借阅中', borrowings_path(q: { status_eq: 0 }), class: 'btn btn-warning' %>
+  <%= link_to '已归还', borrowings_path(q: { status_eq: 1 }), class: 'btn btn-success' %>
+</div>
+
+<%= search_form_for @q, url: borrowings_path, method: :get, local: true, html: { id: "borrowingSearchForm" } do |f| %>
+  <div class="form-group">
+    <label for="start_date">开始日期:</label>
+    <%= f.date_field :borrowed_at_gteq, class: "form-control", placeholder: "选择开始日期" %>
+  </div>
+
+  <div class="form-group">
+    <label for="end_date">结束日期:</label>
+    <%= f.date_field :borrowed_at_lteq, class: "form-control", placeholder: "选择结束日期" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :status_eq, "状态:" %>
+    <%= f.select :status_eq,
+                 options_for_select([["全部", ""], ["借阅中", 0], ["已归还", 1]], params.dig(:q, :status_eq)),
+                 { include_blank: false },
+                 class: "form-control" %>
+  </div>
+
+  <%= f.submit "搜索", class: "btn btn-success" %>
+<% end %>
+
+
+<% if @borrowings.any? %>
+  <table style="border-collapse: collapse; width: 50%; font-size: 12px; margin-left: 0;">
+    <tr>
+      <th style="border: 1px solid #000; padding: 5px;">书籍名称</th>
+      <th style="border: 1px solid #000; padding: 5px;">借阅时间</th>
+      <th style="border: 1px solid #000; padding: 5px;">归还时间</th>
+      <th style="border: 1px solid #000; padding: 5px;">状态</th>
+    </tr>
+    <% @borrowings.each do |borrowing| %>
+      <% if borrowing.returned_at.present? && borrowing.returned_at < borrowing.borrowed_at %>
+        <tr style="color: red;">
+          <td style="border: 1px solid #000; padding: 5px;">错误：归还时间不能早于借阅时间</td>
+        </tr>
+      <% else %>
+        <tr>
+          <td style="border: 1px solid #000; padding: 5px;"><%= borrowing.book.title %></td>
+          <td style="border: 1px solid #000; padding: 5px;"><%= borrowing.borrowed_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+          <td style="border: 1px solid #000; padding: 5px;">
+            <% if borrowing.returned_at.present? %>
+              <%= borrowing.returned_at.strftime("%Y-%m-%d %H:%M:%S") %>
+            <% else %>
+              <!-- 不显示任何内容，留空 -->
+            <% end %>
+          </td>
+          <td style="border: 1px solid #000; padding: 5px;"><%= borrowing.status == 0 ? "未归还" : "已归还" %></td>
+        </tr>
+      <% end %>
+    <% end %>
+  </table>
+
+  <%= paginate @borrowings %> <!-- 分页按钮 -->
+<% else %>
+  <p>没有找到符合条件的借阅记录。</p>  <!-- 提示没有搜索到结果 -->
+<% end %>
+
+<%= link_to '返回', books_path, class: "btn btn-warning" %>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("borrowingSearchForm");
+        const startDateInput = form.querySelector("input[name='q[borrowed_at_gteq]']");
+        const endDateInput = form.querySelector("input[name='q[borrowed_at_lteq]']");
+
+        form.addEventListener("submit", function (e) {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+
+            const isValidDate = (str) => {
+                // 正则验证：年月日形式 (yyyy-mm-dd)
+                const regex = /^\d{4}-\d{2}-\d{2}$/;
+                return regex.test(str);
+            };
+
+            let changed = false;
+
+            // 如果开始日期不合法
+            if (startDate && !isValidDate(startDate)) {
+                startDateInput.value = "";
+                changed = true;
+            }
+
+            // 如果结束日期不合法
+            if (endDate && !isValidDate(endDate)) {
+                endDateInput.value = "";
+                changed = true;
+            }
+
+            // 如果日期有误，重新提交表单
+            if (changed) {
+                e.preventDefault(); // 阻止第一次提交
+                form.submit();      // 再次发起，已清除无效字段
+            }
+        });
+    });
+</script>
+
+
+

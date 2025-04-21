@@ -1,0 +1,115 @@
+作者和图书：
+       首先 创建作者和图书的模型
+rails generate model Author name:string  
+rails generate model Book title:string author:references  //author:references  让book表中有Author_id字段 这个字段是外键
+       然后在Author模型中添加命令
+has_many :books, dependent: :destroy
+       然后提交迁移命令
+rails db:migrate
+       最后添加指令验证
+author=Author.create(name:"Jack Chen")
+author.books.create(title:"哈利波特")
+author.destroy
+
+
+
+=======关联=======
+
+belongs_to 会假设关联是 必需的，意味着每本书籍都必须有一个作者。如果你不想强制要求每本书籍必须有作者，可以使用 optional: true 来使这个关联变为可选。
+
+
+foreign_key: true：他在数据库中强制要求外键的存在，每个 book 记录的 author_id 必须是 authors 表中存在的 id。
+
+
+build：用于创建一个新的关联对象，但该对象尚未保存到数据库。对象会与父对象关联，外键会被设置。
+create：创建并保存对象到数据库，同时关联到父对象。通过外键完成关联。
+create!：与 create 类似，但会在对象验证失败时抛出异常，适用于需要处理验证失败的情况。
+
+
+
+@books = @author.books：获取与 author 相关的所有 books。
+delete：将指定的对象从集合中删除，但不会销毁它，它的外键会被设置为 NULL。
+dependent: :destroy 和 dependent: :delete_all：定义关联时，当父对象删除时，子对象的删除行为。destroy 会调用回调，delete_all 不会。
+destroy：完全销毁并删除对象，从数据库中删除，并且会触发相关的回调。
+clear：从集合中删除所有对象，使用默认或指定的删除策略。
+reload：强制重新加载关联对象，确保从数据库中获取最新的数据。
+
+
+这些方法都用于在 Rails 中处理 关联集合（如 has_many 关联）。
+collection_singular_ids 返回关联对象的 ID 数组。 //  例  @book_ids = @author.book_ids
+
+empty? 检查集合是否为空。
+size 返回集合的大小（元素个数）。
+find 用于通过 ID 查找单个对象。
+where 用于根据条件查询对象，它是懒加载的，直到你访问它时才执行查询。
+exists? 检查是否存在符合条件的对象。
+
+
+
+<<、concat 和 push：用于将对象添加到集合，并在联接表中创建记录。
+delete：从集合中删除对象，但不会销毁它，只会删除联接表中的记录。
+destroy：与 delete 类似，但它会触发对象的销毁回调。
+clear：清空集合，删除所有关联的对象，但不会销毁实际的对象。
+
+
+======================================
+has_many :through                // has_many :through 是一种建立多对多关系的方式，通常使用一个中间模型（或联接模型）。
+has_and_belongs_to_many                 / //has_and_belongs_to_many 是另一种建立多对多关系的方式，这种方式不需要中间模型（联接模型）。
+
+
+====多态连接
+
+as: :imageable 是 Rails 中定义多态关联时使用的选项，它指示关联名称是多态的，并且允许多个模型共享同一个关联。
+polymorphic: true 使得这个关联成为多态关联，意思是：同一个字段可以指向多种不同类型的模型。
+
+
+=========
+rails generate model Picture name:string imageable:references{polymorphic}  //生成Picture 模型  会自动生成两个字段imageable_id  imageable_type
+
+rails generate model Employee name:string    //生产两个模型
+rails generate model Product name:string
+
+
+ has_many :pictures, as: :imageable //设置模型之间关联
+
+
+//实例测试
+product = Product.create(name: "Gadget")
+product_picture = product.pictures.create(name: "Product Image")
+puts product_picture.imageable  # 输出应该是 product 对象
+
+
+
+自连接：通过一个的字段与本表建立连接 ，如：员工和经理  同用一张employee 
+
+传统的单表继承中 所有子类多有属性都在一个表中 会导致表膨胀 防止这种情况发生 可以使用委托类型
+将共享属性存储在超类的表中。
+为每个子类创建一个单独的表，专门存储该子类特有的属性。
+这样，您可以避免在超类的表中存储特定于子类的字段，而是将这些字段存储在子类的表中。
+
+$ bin/rails generate model entry entryable_type:string entryable_id:integer //生成一个超类模型
+
+$ bin/rails generate model message subject:string body:string  //生成子类模型
+$ bin/rails generate model comment content:string
+
+
+delegated_type :entryable, types: %w[ Message Comment ], dependent: :destroy//定义在Entry类中
+
+//定义一个模块为子类模型提供委托行为
+module Entryable
+  extend ActiveSupport::Concern
+
+  included do
+    has_one :entry, as: :entryable, touch: true
+  end
+end
+
+Entry.create! entryable: Message.new(subject: "hello!") //创建超类和委托类型的子类对象
+
+
+:foreign_key：允许你显式设置外键列名，而不是使用默认的 关联名称_id 形式。
+:primary_key：允许你为关联指定不同于默认 id 的主键。
+:touch：在更新或销毁关联对象时自动更新父对象的时间戳字段。
+
+
+

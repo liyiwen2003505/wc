@@ -1,0 +1,33 @@
+<h1>注册</h1>
+<%= form_with model: @user, local: true do |form| %>
+ <p>
+   <%= form.label :姓名 %>
+   <%= form.text_field :name %>
+ </p>
+
+  <p>
+    <%= form.label :邮箱 %>
+    <%= form.email_field :email %>
+  </p>
+
+  <p>
+    <%= form.label :密码 %>
+    <%= form.password_field :password %>
+  </p>
+
+  <p>
+    <%= form.label :确认密码 %>
+    <%= form.password_field :password_confirmation %>
+  </p>
+
+  <div>
+    <%= form.label :avatar, "头像" %>
+    <%= form.file_field :avatar %>
+  </div>
+
+
+  <%= form.submit "注册" %>
+<% end %>
+
+<%= link_to "返回登陆", new_session_path %>
+

@@ -1,0 +1,16 @@
+<h1>登录</h1>
+<%= form_with url: sessions_path, method: :post do |f| %>
+  <p>
+    <%= f.label :email, "邮箱：" %>
+    <%= f.email_field :email,value: "123@qq.com" %>
+  </p>
+  <p>
+    <%= f.label :password, "密码：" %>
+    <%= f.password_field :password,value: "1234" %>
+  </p>
+  <p>
+    <%= f.submit "登录" %>
+  </p>
+<% end %>
+
+<%= link_to "没有账号？注册", new_user_path %>

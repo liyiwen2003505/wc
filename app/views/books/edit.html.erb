@@ -1,0 +1,34 @@
+<h1>修改书籍</h1>
+
+<%= form_with(model: @book, local: true) do |f| %>
+  <div>
+    <%= f.label :title, "书名" %>
+    <%= f.text_field :title %>
+  </div>
+
+  <div>
+    <%= f.label :author_id, "作者" %>
+    <%= f.select :author_id, options_from_collection_for_select(Author.all, :id, :name, @book.author_id), { prompt: "请选择作者" } %>
+  </div>
+
+  <div>
+    <%= f.label :category_id, "分类" %>
+    <%= f.select :category_id, options_from_collection_for_select(Category.all, :id, :name, @book.category_id), { prompt: "请选择分类" } %>
+  </div>
+
+  <div>
+    <%= f.label :total, "库存" %>
+    <%= f.number_field :total, min: 0, step: 1 %>
+  </div>
+
+  <div>
+    <%= f.label :description, "描述" %>
+    <%= f.text_area :description %>
+  </div>
+
+  <div>
+    <%= f.submit "保存更改" %>
+  </div>
+<% end %>
+
+<%= link_to '返回',book_path(@book) %>

@@ -1,0 +1,38 @@
+<%= form_with(model: @author, local: true, html: { multipart: true }) do |form| %>
+  <div class="field">
+    <%= form.label :姓名 %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= form.label :性别 %>
+    <%= form.select :gender, [["男", "男"], ["女", "女"]], selected: "男" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :年龄 %>
+    <%= form.number_field :age %>
+  </div>
+
+  <div class="field">
+    <%= form.label :详情 %>
+    <%= form.text_area :description %>
+  </div>
+
+  <div class="field">
+    <%= form.label :身份证号 %>
+    <%= form.text_field :id_number %>
+  </div>
+
+  <div class="field">
+    <%= form.label :头像 %>
+    <%= form.file_field :avatar %>
+  </div>
+
+  <div>
+    <%= form.submit "添加作者" %>
+  </div>
+  <div>
+    <%= link_to "返回", authors_path %>
+  </div>
+<% end %>

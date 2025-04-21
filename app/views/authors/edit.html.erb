@@ -1,0 +1,38 @@
+<%= form_for @author, html: { multipart: true } do |f| %>
+  <div>
+    <%= f.label :姓名 %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= f.label :性别 %>
+    <%= f.select :gender, [["男", "男"], ["女", "女"]], selected: "男" %>
+  </div>
+
+  <div>
+    <%= f.label :年龄 %>
+    <%= f.number_field :age %>
+  </div>
+
+  <div>
+    <%= f.label :描述 %>
+    <%= f.text_area :description %>
+  </div>
+
+  <div>
+    <%= f.label :身份证号 %>
+    <%= f.text_field :id_number %>
+  </div>
+
+  <div>
+    <%= f.label :头像 %>
+    <%= f.file_field :avatar %>
+  </div>
+
+  <div>
+    <%= f.submit "更新" %>
+  </div>
+  <div>
+    <%= link_to "返回", authors_path %>
+  </div>
+<% end %>

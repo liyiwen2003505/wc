@@ -34,11 +34,11 @@ class UsersController < ApplicationController
     end
 
     if @user.save  # 如果用户符合条件，保存到数据库
-      # 记录用户注册成功
-      # @logger.info("用户 #{params[:user][:email]} 注册成功，用户ID: #{@user.id}")
+      #记录用户注册成功
+      @logger.info("用户 #{params[:user][:email]} 注册成功，用户ID: #{@user.id}")
 
-      # session[:user_id] = @user.id  # 记录该用户 ID
-      # redirect_to new_session_path, notice: "注册成功"  # 注册成功后跳转到登录页面
+      session[:user_id] = @user.id  # 记录该用户 ID
+      redirect_to new_session_path, notice: "注册成功"  # 注册成功后跳转到登录页面
     else
       # 记录用户保存失败的原因
       @logger.error("用户 #{params[:user][:email]} 注册失败，原因: #{@user.errors.full_messages.to_sentence}")

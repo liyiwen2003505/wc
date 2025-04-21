@@ -1,0 +1,21 @@
+<h1><%= @book.title %></h1>
+<p>介绍: <%= @book.description %></p>
+<p>作者: <%= @book.author.name %></p>
+<p>类别: <%= @book.category.name %></p>
+
+<!-- 显示这本书总数量和借出的数量 -->
+<p>这本书共有: <%= @book.total + @book.borrowings.where(status: 0).count %> 本</p>
+
+<h3>借阅人名单：</h3>
+<ul>
+  <% @book.borrowings.where(status: 0).each do |borrowing| %>
+    <li><%= borrowing.user.name %></li>
+  <% end %>
+</ul>
+<% if current_user %>
+  <%= link_to '编辑', edit_book_path(@book) %>
+  <%= button_to '删除', book_path(@book), method: :delete %>
+<% end %>
+
+
+<%= link_to '返回'  , books_path%>

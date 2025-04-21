@@ -1,0 +1,91 @@
+<!-- app/views/books/index.html.erb -->
+<h1>图书</h1>
+
+<% if current_user %>
+  <%= button_to "退出登录", session_path(:id), method: :delete %>
+<% else %>
+  <%= link_to "登录", new_session_path %>
+  <%= link_to "注册", new_user_path %>
+<% end %>
+
+<% if current_user %>
+  <%= link_to "添加书籍", new_book_path %> |
+  <%= link_to "查看我的借阅", borrowings_path %> |
+<% else %>
+  <%= link_to "登录后添加", new_session_path %> |
+  <%= link_to "登录后查看借阅", new_session_path %> |
+<% end %>
+
+<% if current_user %>
+  <%= link_to "查看作者列表", authors_path %>
+  <%= link_to "查看分类列表", categories_path %>
+<% else %>
+  <%= link_to "登录后查看作者", new_session_path %>
+  <%= link_to "登录后查看分类", new_session_path %>
+<% end %>
+
+<% if @books.present? %>
+  <!-- 使用 Ransack 表单生成搜索条件 -->
+  <%= search_form_for @q, url: search_books_path, method: :get do |f| %>
+    <%= f.label :title_cont, '书名' %>
+    <%= f.text_field :title_cont %>
+
+    <%= f.label :category_id_eq, '类别' %>
+    <%= f.collection_select :category_id_eq, Category.all, :id, :name, include_blank: true %>
+
+    <%= f.label :author_id_eq, '作者' %>
+    <%= f.collection_select :author_id_eq, Author.all, :id, :name, include_blank: true %>
+
+    <%= f.label :author_age_gteq, '最小年龄' %>
+    <%= f.number_field :author_age_gteq, min: 0, max: 120, placeholder: '0' %>
+
+    <%= f.label :author_age_lteq, '最大年龄' %>
+    <%= f.number_field :author_age_lteq, min: 0, max: 120, placeholder: '120' %>
+
+    <%= f.submit '搜索' %>
+  <% end %>
+
+
+
+  <table style="border-collapse: collapse; width: 50%; font-size: 12px; margin-left: 0;">
+    <tr>
+      <th style="border: 1px solid #000; padding: 5px;">书名</th>
+      <th style="border: 1px solid #000; padding: 5px;">作者</th>
+      <th style="border: 1px solid #000; padding: 5px;">年龄</th>
+      <th style="border: 1px solid #000; padding: 5px;">类别</th>
+      <th style="border: 1px solid #000; padding: 5px;">可借阅数量</th>
+      <th style="border: 1px solid #000; padding: 5px;">借出数量</th>
+      <th style="border: 1px solid #000; padding: 5px;">操作</th>
+      <th style="border: 1px solid #000; padding: 5px;">功能</th>
+    </tr>
+    <% @books.each do |book| %>
+      <tr>
+        <td style="border: 1px solid #000; padding: 5px;"><%= book.title %></td>
+        <td style="border: 1px solid #000; padding: 5px;"><%= book.author.name %></td>
+        <td style="border: 1px solid #000; padding: 5px;"><%= book.author.age %></td>
+        <td style="border: 1px solid #000; padding: 5px;"><%= book.category.name %></td>
+        <td style="border: 1px solid #000; padding: 5px;"><%= book.total %></td>
+        <td style="border: 1px solid #000; padding: 5px;"><%= book.borrowings.where(status: 0).count %></td>
+        <td style="border: 1px solid #000; padding: 5px;">
+          <%= link_to '详情', book_path(book) %>
+        </td>
+        <td style="border: 1px solid #000; padding: 5px;">
+          <% if current_user %>
+            <% borrowing = current_user.borrowings.find_by(book_id: book.id, status: 0) %>
+            <%= button_to "借阅", borrow_book_path(book), method: :post, disabled: borrowing.present? %>
+            <%= button_to "还书", return_book_path(book), method: :post, disabled: borrowing.blank? %>
+          <% else %>
+            <%= link_to "登录后借阅", new_session_path %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>
+
+<%= paginate @books %> <!-- 分页按钮 -->
+
+
+
+
+
