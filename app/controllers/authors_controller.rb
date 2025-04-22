@@ -121,7 +121,7 @@ class AuthorsController < ApplicationController
     end
 
     # 确保年龄在0到120之间且不为空
-    if @author.age.blank? || @author.age < 0 || @author.age > 40
+    if @author.age.blank? || @author.age < 0 || @author.age > 80
       flash.now[:alert] = "年龄必须在0到40之间并且不能为空！"
       @logger.error("作者年龄不在有效范围内，年龄: #{@author.age}")
       render :new, status: :unprocessable_entity and return
